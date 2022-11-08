@@ -1,23 +1,23 @@
 export default function matchSwitch<
-  P extends Record<
+  K extends PropertyKey,
+  T extends Record<
     PropertyKey,
-    ((value: (value: PropertyKey) => Object) => Object) | Object
-  >
->(
-  value: PropertyKey,
-  branches: P,
-  defaultBranch?: ((value: (value: PropertyKey) => Object) => Object) | Object
-) {
-  const target =
-    value in branches
-      ? // @ts-ignore
-        branches[value]
-      : defaultBranch ?? branches.default ?? branches._;
+    Object | (() => Object) | ((next: (value: PropertyKey) => never) => void)
+  >,
+  R =
+    | ReturnType<Extract<T[keyof T], (...args: any[]) => any>>
+    | Exclude<T[keyof T], (...args: any[]) => any>
+>(value: K, branches: T): R {
+  const target = value in branches ? branches[value] : branches[_ as K];
   if (typeof target == 'function') {
-    return target((value: PropertyKey) =>
-      matchSwitch(value, branches, defaultBranch)
-    );
+    // @ts-ignore
+    return target(value => matchSwitch(value, branches));
   } else {
+    // @ts-ignore
     return target;
   }
 }
+/**
+ * defaultPropertyKey
+ */
+export const _ = Symbol();
