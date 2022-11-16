@@ -2,7 +2,11 @@ export default function matchSwitch<
   K extends PropertyKey,
   T extends Record<
     PropertyKey,
-    Object | (() => Object) | ((next: (value: PropertyKey) => never) => void)
+    | Object
+    | null
+    | undefined
+    | (() => Object)
+    | ((next: (value: PropertyKey) => never) => void)
   >,
   R =
     | ReturnType<Extract<T[keyof T], (...args: any[]) => any>>
