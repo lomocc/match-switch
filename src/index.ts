@@ -1,3 +1,5 @@
+import { omit } from 'lodash';
+
 export default function matchSwitch<
   K extends PropertyKey,
   T extends Record<
@@ -6,17 +8,21 @@ export default function matchSwitch<
     | null
     | undefined
     | (() => Object)
-    | ((next: (value: PropertyKey) => never) => void)
+    | ((value: PropertyKey, next: (value: PropertyKey) => never) => void)
   >,
   R =
     | ReturnType<Extract<T[keyof T], (...args: any[]) => any>>
     | Exclude<T[keyof T], (...args: any[]) => any>
 >(value: K | null | undefined, branches: T): R {
   const target =
-    value != null && value in branches ? branches[value] : branches[_ as K];
+    $ in branches
+      ? branches[$ as K]
+      : value != null && value in branches
+      ? branches[value]
+      : branches[_ as K];
   if (typeof target == 'function') {
     // @ts-ignore
-    return target(value => matchSwitch(value, branches));
+    return target(value, value => matchSwitch(value, omit(branches, [$])));
   } else {
     // @ts-ignore
     return target;
@@ -26,3 +32,7 @@ export default function matchSwitch<
  * defaultPropertyKey
  */
 export const _ = Symbol();
+/**
+ * allPropertyKey
+ */
+export const $ = Symbol();
