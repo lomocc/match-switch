@@ -6,12 +6,12 @@ export default function matchSwitch<
     | ReturnType<Extract<T[keyof T], (...args: any[]) => any>>
 >(value: K | null | undefined, branches: T): R {
   if (value != null && value in branches) {
-    return branches[value];
+    return branches[value] as R;
   } else {
-    return branches[_];
+    return branches[_ as K];
   }
 }
 /**
  * defaultPropertyKey
  */
-export const _ = Symbol();
+export const _ = Symbol('default');
