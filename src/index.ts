@@ -1,14 +1,19 @@
 export default function matchSwitch<
+  Autorun extends boolean,
   K extends PropertyKey,
   T extends Record<PropertyKey, any>,
-  R =
-    | Exclude<T[keyof T], (...args: any[]) => any>
-    | ReturnType<Extract<T[keyof T], (...args: any[]) => any>>
->(value: K | null | undefined, branches: T): R {
-  if (value != null && value in branches) {
-    return branches[value] as R;
+  R = Autorun extends true
+    ?
+        | Exclude<T[keyof T], (...args: any[]) => any>
+        | ReturnType<Extract<T[keyof T], (...args: any[]) => any>>
+    : T[keyof T]
+>(value: K | null | undefined, branches: T, autorun?: Autorun): R {
+  const target =
+    value != null && value in branches ? branches[value] : branches[_ as K];
+  if (autorun && typeof target === 'function') {
+    return target();
   } else {
-    return branches[_ as K];
+    return target;
   }
 }
 /**
